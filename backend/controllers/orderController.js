@@ -2,6 +2,9 @@ const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
 const asyncHandler = require("../utils/asyncHandler");
+const sendEmail = require("../utils/sendEmail");
+const orderConfirmationTemplate = require("../templates/orderConfirmationTemplate");
+const orderStatusTemplate = require("../templates/orderStatusTemplate");
 
 // ================= PLACE ORDER =================
 exports.placeOrder = asyncHandler(async (req, res) => {
@@ -58,6 +61,26 @@ exports.placeOrder = asyncHandler(async (req, res) => {
     taxPrice,
     totalPrice,
   });
+
+  // ================= Send Order Confirmation Email =================
+try {
+  const populatedOrder = await Order.findById(order._id)
+    .populate("user", "name email")
+    .populate("orderItems.product", "name");
+
+  const html = orderConfirmationTemplate(populatedOrder);
+
+  await sendEmail({
+    to: populatedOrder.user.email,
+    subject: `GreenGrid Order Confirmation #${populatedOrder._id}`,
+    html,
+  });
+
+  console.log("Order confirmation email sent.");
+
+} catch (error) {
+  console.error("Order confirmation email failed:", error.message);
+}
 
   cart.items = [];
   cart.totalPrice = 0;
@@ -167,7 +190,8 @@ exports.getAllOrders = asyncHandler(async (req, res) => {
 exports.updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderStatus } = req.body;
 
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id)
+    .populate("user", "name email");
 
   if (!order) {
     return res.status(404).json({
@@ -183,6 +207,21 @@ exports.updateOrderStatus = asyncHandler(async (req, res) => {
   }
 
   await order.save();
+
+  // ================= Send Status Email =================
+  try {
+    const html = orderStatusTemplate(order);
+
+    await sendEmail({
+      to: order.user.email,
+      subject: `GreenGrid Order ${order.orderStatus}`,
+      html,
+    });
+
+    console.log("Order status email sent.");
+  } catch (error) {
+    console.error("Order status email failed:", error.message);
+  }
 
   res.status(200).json({
     success: true,

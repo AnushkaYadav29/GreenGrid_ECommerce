@@ -18,6 +18,9 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const emailRoutes = require("./routes/emailRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -48,6 +51,9 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/email", emailRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use(notFound);
 
