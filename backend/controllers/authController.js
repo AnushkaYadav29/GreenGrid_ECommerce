@@ -173,16 +173,19 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
 
   } catch (error) {
 
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+  console.error("Forgot Password Email Error:");
+  console.error(error);
 
-    await user.save({ validateBeforeSave: false });
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
 
-    return res.status(500).json({
-      success: false,
-      message: "Email could not be sent",
-    });
-  }
+  await user.save({ validateBeforeSave: false });
+
+  return res.status(500).json({
+    success: false,
+    message: "Email could not be sent",
+  });
+}
 });
 
 // ================= Reset Password =================
